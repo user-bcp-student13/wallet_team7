@@ -1,0 +1,17 @@
+{
+  "name": "wallet-team7-backend",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Mock del API de onboarding de wallet (contrato docs/ONBOARDING-CONTRACT.md)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --test test/"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "express": "^5.1.0"
+  }
+}
