@@ -41,7 +41,7 @@ El diseño actual muestra un límite y un requisito de DNI que no corresponden a
 - Validación de DNI contra un servicio externo.
 - Límites por usuario o por perfil.
 - Comisiones, cargos o tarifas.
-- Cambios en `docs/ENDPOINTS.md`. Esta spec no modifica el contrato.
+- Cambios en `docs/ONBOARDING-CONTRACT.md`. Esta spec no modifica el contrato.
 
 ## Criterios de aceptación
 
@@ -59,7 +59,7 @@ El diseño actual muestra un límite y un requisito de DNI que no corresponden a
 
 - `Onboarding`: el contrato no tiene campos de límite por transferencia ni de máximo diario. Si la app debe mostrarlos, hay que decidir dónde se exponen (campo nuevo en `Onboarding` o en la respuesta de la wallet). Queda pendiente.
 - `PUT /onboardings/current/steps/{stepId}`: sin paso de DNI. No cambia en esta spec.
-- `docs/ENDPOINTS.md` queda protegido en esta spec.
+- `docs/ONBOARDING-CONTRACT.md` queda protegido en esta spec.
 
 ## Riesgos, supuestos y preguntas abiertas
 

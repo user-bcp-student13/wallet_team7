@@ -1,0 +1,9 @@
+{
+  "countryCode": "PE",
+  "currency": "PEN",
+  "perTransferMaxPEN": 10,
+  "dailyMaxTransfers": 5,
+  "dailyMaxPEN": 50,
+  "resetTime": "23:59",
+  "timezone": "America/Lima"
+}

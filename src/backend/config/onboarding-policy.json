@@ -1,0 +1,18 @@
+{
+  "otp": {
+    "length": 6,
+    "ttlSeconds": 60,
+    "maxAttempts": 3,
+    "blockMinutes": 4,
+    "maxResends": 3
+  },
+  "pin": {
+    "length": 6,
+    "maxRegenerations": 2
+  },
+  "idempotency": {
+    "ttlMinutes": 10,
+    "keyMinLength": 16,
+    "keyMaxLength": 128
+  }
+}

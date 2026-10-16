@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wallet Team7 - Alta de cuenta (prototipo)</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header>
+    <h1>Alta de wallet - prototipo</h1>
+    <p>Backend mock. Código SMS: <strong>123456</strong></p>
+  </header>
+
+  <div class="phone" id="app">
+    <div class="screen">
+
+      <!-- Pantalla 1: bienvenida -->
+      <section class="view" id="v-welcome" hidden>
+        <div class="center" style="display:flex;flex-direction:column;height:100%;">
+          <div class="hero">
+            <div class="logo"></div>
+            <div class="title">Tu wallet, en tu celular</div>
+            <div class="sub">Paga, cobra y transfiere en segundos. Crear tu cuenta toma menos de 3 minutos.</div>
+          </div>
+          <button class="btn" id="btnStart">Crear mi wallet</button>
+          <button class="btn-link" id="btnHasAccount">Ya tengo cuenta</button>
+          <div class="note" id="accountMsg" hidden></div>
+        </div>
+      </section>
+
+      <!-- Pantalla 2: celular -->
+      <section class="view" id="v-phone" hidden>
+        <button class="top-link" data-back="v-welcome">&larr;</button>
+        <div class="title">Ingresa tu celular</div>
+        <div class="sub">Te enviaremos un código por SMS para verificarlo.</div>
+        <div class="phone-row">
+          <div class="prefix">+51</div>
+          <input class="input" id="phone" inputmode="numeric" maxlength="9" placeholder="9XX XXX XXX" autocomplete="tel">
+        </div>
+        <label class="check">
+          <input type="checkbox" id="terms">
+          <span>Acepto los <a class="link-text" id="termsLink" href="#" target="_blank" rel="noopener">Términos y condiciones</a> y la <a class="link-text" id="policyLink" href="#" target="_blank" rel="noopener">Política de datos</a>.</span>
+        </label>
+        <div class="error" id="phoneError" hidden></div>
+        <button class="btn" id="btnPhone" disabled>Continuar</button>
+      </section>
+
+      <!-- Pantalla 3: código OTP -->
+      <section class="view" id="v-otp" hidden>
+        <button class="top-link" data-back="v-phone">&larr;</button>
+        <div class="title">Ingresa el código</div>
+        <div class="sub">Enviamos un código de 6 dígitos al <span id="maskedPhone"></span>.</div>
+        <div class="otp-row" id="otpRow"></div>
+        <div class="error" id="otpError" hidden></div>
+        <div class="muted" id="otpInfo"></div>
+        <button class="btn" id="btnOtp" disabled>Verificar</button>
+        <button class="btn-link" id="resend" disabled>Reenviar código <span id="timer"></span></button>
+        <button class="btn-link" id="changePhone">Cambiar número</button>
+      </section>
+
+      <!-- Pantalla 4: PIN -->
+      <section class="view" id="v-pin" hidden>
+        <div class="title">Tu PIN de 6 dígitos</div>
+        <div class="sub">Lo generamos por ti. Guárdalo: lo usarás para confirmar tus pagos.</div>
+        <div class="pin-display" id="pinDisplay"></div>
+        <button class="btn-link" id="btnShowPin">Mostrar PIN</button>
+        <div class="muted" id="pinInfo"></div>
+        <div class="error" id="pinError" hidden></div>
+        <button class="btn-link" id="btnRegenerate">Generar otro PIN</button>
+        <label class="check">
+          <input type="checkbox" id="pinSaved">
+          <span>Guardé mi PIN en un lugar seguro.</span>
+        </label>
+        <button class="btn" id="btnPin" disabled>Activar wallet</button>
+      </section>
+
+      <!-- Pantalla 5: cuenta lista -->
+      <section class="view" id="v-done" hidden>
+        <div class="done">&#10003;</div>
+        <div class="title" style="text-align:center;">Tu wallet está activa</div>
+        <div class="sub" style="text-align:center;">Ya puedes enviar hasta S/ 10 por transferencia.</div>
+        <div class="limit">
+          Límite por transferencia
+          <strong id="limitPerTransfer">S/ 10</strong>
+        </div>
+        <div class="limit">
+          Transferencias por día
+          <strong id="limitDaily">5</strong>
+        </div>
+        <button class="btn" id="btnRestart">Volver al inicio</button>
+      </section>
+
+      <!-- Pantalla de carga y errores globales -->
+      <section class="view center" id="v-loading" hidden>
+        <div class="sub" style="text-align:center;" id="loadingMsg">Cargando...</div>
+        <div class="error" id="globalError" hidden></div>
+      </section>
+
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
