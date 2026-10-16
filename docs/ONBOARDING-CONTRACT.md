@@ -33,10 +33,10 @@ Los pasos y su orden los define el servidor en `steps`. El cliente sigue `curren
 |---|---|---|---|---|
 | 1 | `phone` | 2 | `phoneNumber` (9 dígitos) y `termsAccepted` | El servidor envía el OTP por el proveedor (mock en este sprint). |
 | 2 | `otp` | 3 | `otpCode` (6 dígitos) | Avanza si el código es correcto. |
-| 3 | `pin` | 4 | Sin campos. El servidor genera el PIN. | Devuelve el PIN generado una vez. [G canal, ver abajo] |
+| 3 | `pin` | 4 | Sin campos. El servidor genera el PIN. | Devuelve el PIN generado una vez por el canal decidido (ver Decisiones cerradas). |
 | 4 | `pinConfirmation` | 4 | `pinSavedConfirmation: true` | Activa la wallet: `walletStatus: active`, `status: completed`. |
 
-[G] Si el paso `pin` debe ser un paso separado de la confirmación, o si la confirmación puede ir en la misma petición. Este borrador usa dos pasos. Seguridad y producto lo confirman.
+Confirmado: `pin` y `pinConfirmation` son dos pasos separados.
 
 ## Endpoints
 
@@ -48,9 +48,9 @@ Los pasos y su orden los define el servidor en `steps`. El cliente sigue `curren
 | GET | `/onboardings/current` | [C] | Consulta el progreso y el paso actual. |
 | PUT | `/onboardings/current/steps/{stepId}` | [C] | Valida y completa un paso. |
 | POST | `/onboardings/current/close` | [C] | Cierra el flujo sin activar la wallet. |
-| POST | `/onboardings/current/otp/resend` | [P] | Reenvía el OTP. Sujeto a un máximo de reenvíos [G]. |
+| POST | `/onboardings/current/otp/resend` | [P] | Reenvía el OTP. Máximo 3 reenvíos por onboarding (parámetro OTP). |
 
-[G] "Cambiar número" no tiene endpoint. Brecha 1 de `endpoints_onboarding.md`. Se propone volver al paso `phone` con `PUT` y un `Idempotency-Key` nuevo, pero no está decidido.
+Cambio de número: incluido en este sprint. [G] Mecanismo sin definir. Se propone volver al paso `phone` con `PUT` y un `Idempotency-Key` nuevo; el endpoint o paso concreto lo confirma producto.
 
 ### Errores comunes
 
@@ -71,7 +71,12 @@ Para la validación del OTP, `errors[].code` toma estos valores [P]:
 - `OTP_EXPIRED`: código vencido. Pedir uno nuevo.
 - `OTP_ATTEMPTS_EXCEEDED`: bloqueo temporal por intentos.
 
-[G] Número de intentos, duración del bloqueo, vigencia del código y máximo de reenvíos. Los define seguridad. Deben ser parámetros de configuración (spec OTP, criterios 5 y 6).
+Parámetros OTP (definidos por seguridad, deben ser configurables; spec OTP, criterios 5 y 6):
+
+- Intentos de validación: 3.
+- Bloqueo tras agotar intentos: 4 [supuesto: minutos; confirmar unidad].
+- Vigencia del código: 1 minuto.
+- Reenvíos máximos: 3.
 
 [G] El prototipo muestra "Te quedan 2 intentos". El contrato no devuelve ese contador. No se codifica fijo.
 
@@ -103,9 +108,10 @@ Onboarding:
         perTransferMaxPEN: { type: number, example: 10 }
         dailyMaxTransfers: { type: integer, example: 5 }
         currency: { type: string, enum: [PEN] }
+        dailyMaxPEN: { type: number, example: 50 }
 ```
 
-[G] Si `limits` vive en `Onboarding` o en la respuesta de la wallet. Lo decide producto. Los valores son parámetros de configuración (spec de límite, criterio 5). Pendiente: el tope total diario es S/ 50 (5 × S/ 10) y no está confirmado.
+Los valores de `limits` salen de un archivo mock en este sprint (spec de límite, criterio 5). El tope diario es S/ 50 (5 × S/ 10). [G] Si `limits` vive en `Onboarding` o en la respuesta de la wallet a largo plazo.
 
 ### OnboardingStep [C]
 
@@ -171,6 +177,8 @@ Notas:
 
 - [P] El `otpCode` nunca se devuelve en respuestas de éxito ni de error (spec OTP, criterio 2 y 7).
 - [P] El `phoneNumber` se envía y se usa solo para el envío del OTP. No se registra en logs (reglas §7.3).
+- [P] MFA para alta de cuenta (reglas §3.4): el alta MVP usa dos factores (OTP por SMS como posesión + PIN como conocimiento). No se considera MFA fuerte para elevar límites o cambios KYC; el riesgo de SIM swap/interceptación se mitiga con límites estrictos y controles de abuso.
+- [P] Términos y política de datos: la URL y el texto son un mock provisional hasta que compliance entregue el texto aprobado [G].
 - [G] El `phoneNumber` no se vuelve a mostrar en la respuesta. Hay que decidir si la pantalla 3 necesita un enmascarado (por ejemplo, `*** *** 123`) y de dónde sale.
 
 ### Respuesta del paso `pin` [P]
@@ -197,15 +205,15 @@ Reglas del PIN [P]:
 - No hay endpoint que devuelva el PIN en claro después de esta respuesta (spec PIN, criterio 8).
 - Un reintento con la misma `Idempotency-Key` devuelve el mismo PIN y no genera uno nuevo (reglas §4.7).
 
-[G] Canal de entrega. Opciones: en la respuesta de la API (este borrador), o por otro canal. Si va por SMS, comparte canal con el OTP y reduce la protección (spec PIN, riesgos).
+[P] Canal de entrega: el PIN se entrega únicamente en la respuesta HTTPS del paso `pin` (campo `generatedPin`). No se envía por SMS ni por otro canal que comparta el riesgo del OTP.
 
-[G] Para que un reintento devuelva el mismo PIN sin guardarlo en claro, hace falta una caché temporal cifrada de la respuesta. Hay que decidir si se permite y por cuánto tiempo (spec PIN, criterio 6, supuesto).
+[P] Idempotencia y caché: para permitir reintentos sin guardar el PIN en claro, el backend mantiene una caché temporal cifrada asociada a la `Idempotency-Key`. Ventana propuesta: 10 minutos. Dentro de esa ventana, un reintento devuelve el mismo `generatedPin`. Fuera de esa ventana, el backend no reexpone el PIN.
 
-[G] Visibilidad en pantalla: oculto por defecto con opción de mostrar, o siempre visible. Pendiente con seguridad.
+[P] Visibilidad en pantalla: el cliente muestra el PIN oculto por defecto y lo revela solo por acción explícita del usuario (p. ej. botón “mostrar”).
 
-[G] Regeneración del PIN: si el usuario puede pedir otro, cuántas veces y qué pasa con el anterior.
+[P] Regeneración del PIN: máximo 2 veces por onboarding. Cada regeneración invalida el PIN anterior [supuesto]. El mecanismo (paso o endpoint) queda [G].
 
-[G] Bloqueo por intentos fallidos de uso del PIN (reglas §5.6): intentos, ventana y duración. Sin definir, porque el PIN todavía no autoriza operaciones.
+[P] Bloqueo por intentos fallidos de uso del PIN (reglas §5.6): se bloquea al 4.º intento fallido. Duración y ventana [G].
 
 [G] Si el generador excluye patrones débiles (`000000`, `123456`). Seguridad decide.
 
@@ -220,11 +228,11 @@ Reglas del PIN [P]:
 
 [G] El cumplimiento de S/ 10 sin DNI en Perú no está confirmado por compliance. Si el proveedor real tiene un límite menor, prevalece el menor.
 
-[G] Zona horaria (propuesta `America/Lima`) y hora de reinicio del conteo diario de 5 transferencias.
+El conteo diario de transferencias se reinicia a las 23:59 en zona `America/Lima` [supuesto: zona por confirmar].
 
-[G] Si una transferencia por encima del límite se rechaza o queda en espera. El supuesto es rechazo. Confirmar.
+Una transferencia por encima del límite se rechaza con mensaje de límite (confirmado).
 
-Los límites se aplican en el contrato de transferencias, que no pertenece a este documento [G].
+Los límites viven en un archivo mock y se aplican en el contrato de transferencias, que no pertenece a este documento.
 
 ## Reglas para el cliente
 
@@ -232,6 +240,7 @@ Los límites se aplican en el contrato de transferencias, que no pertenece a est
 - [C] Antes de mostrar un paso, usar `GET /onboardings/current` para conocer `currentStepId`.
 - [C] Tras un `422`, marcar los campos de `errors[].field` y no avanzar.
 - [P] Tras la respuesta del paso `pin`, el cliente muestra el PIN una sola vez. No lo guarda, no lo registra y no lo envía a analítica.
+- [P] El PIN se muestra oculto por defecto y se revela solo por acción explícita del usuario.
 - [P] No se persisten `otpCode`, `phoneNumber` ni `generatedPin` en almacenamiento local ni en logs.
 - [C] No registrar `answers` en logs, analítica ni crash reports.
 - [C] La analítica la registra el servidor. La app no envía eventos de onboarding.
@@ -240,20 +249,30 @@ Los límites se aplican en el contrato de transferencias, que no pertenece a est
 
 El contrato anterior incluía `GET /internal/analytics/onboarding/monthly` (métricas mensuales, CAC y actividad). No es parte de la app móvil. Se excluye de este documento y se decide en un contrato interno aparte [G].
 
+
+
 ## Preguntas abiertas antes de codificar
 
-1. Parámetros de OTP: intentos, bloqueo, vigencia y reenvíos (seguridad).
-2. Validación formal del segundo factor: OTP por SMS + PIN, frente a reglas §3.4 y riesgo de SIM swap (seguridad).
-3. Canal y visibilidad del PIN, y caché de la respuesta con el PIN (seguridad).
-4. Regeneración del PIN y PIN débiles (seguridad).
-5. Bloqueo por intentos del PIN (seguridad).
-6. Dónde viven `limits` y cómo se aplican en transferencias (producto).
-7. Zona horaria y reinicio del conteo; tope diario de S/ 50 (producto).
-8. Cumplimiento de S/ 10 sin DNI (compliance).
-9. Flujo "Ya tengo cuenta" y acceso con 401 (producto).
-10. Términos y política de datos: URL y texto aprobado (compliance).
-11. Si el paso `pin` y la confirmación son dos pasos (este borrador asume que sí).
-12. Reenvío y cambio de número en este sprint (producto).
+1. Cumplimiento de S/ 10 sin DNI (compliance). Bloqueante: compliance lo confirma antes de codificar.
+2. Bloqueo OTP: unidad de "bloqueo=4" (minutos u otra) (seguridad).
+3. Zona horaria exacta del reinicio a las 23:59 (producto; supuesto `America/Lima`).
+4. Mecanismo de regeneración del PIN y de cambio de número (producto/seguridad).
+5. Política de PIN débiles (`000000`, `123456`) (seguridad).
+6. Enmascarado del número en la pantalla 3 y de dónde sale (producto).
+
+## Decisiones cerradas (MVP)
+
+1. **Segundo factor (MFA) para alta**: se valida que el alta MVP cumple la intención de MFA (reglas §3.4) con OTP por SMS (posesión) + PIN (conocimiento). Se reconoce el riesgo de SIM swap/interceptación de SMS; por eso no se considera MFA fuerte para elevar límites o cambios KYC y se mitiga con límites estrictos y controles de abuso. Validación formal pendiente con seguridad.
+2. **PIN (canal, visibilidad e idempotencia)**: el PIN se entrega solo por respuesta HTTPS del paso `pin` (no por SMS), se muestra oculto por defecto con acción explícita de revelar, y los reintentos se soportan mediante caché temporal cifrada asociada a `Idempotency-Key` (ventana propuesta 10 minutos) sin reexponer el PIN fuera de esa ventana.
+3. **PIN de 6 dígitos, generado por el servidor**, con regeneración máxima de 2 veces y bloqueo al 4.º intento fallido de uso.
+4. **OTP (parámetros)**: 3 intentos de validación, vigencia de 1 minuto, 3 reenvíos máximos. Proveedor de terceros mockeado.
+5. **Dos pasos confirmados**: `pin` y `pinConfirmation` son pasos separados.
+6. **Límites**: S/ 10 por transferencia, máximo 5 al día, tope diario S/ 50, reinicio a las 23:59. Transferencia sobre el límite: se rechaza con mensaje de límite. Valores en archivo mock.
+7. **Términos y política de datos**: URL y texto provisionales (mock) hasta aprobación de compliance.
+8. **Reenvío de OTP y cambio de número**: incluidos en este sprint.
+9. **Alias de usuario**: número de celular de 9 dígitos.
+10. **Cuenta existente**: si el celular ya tiene cuenta, se muestra mensaje de cuenta existente y se redirige a iniciar sesión (respuesta 401 en el endpoint correspondiente).
+
 
 ## Fuera de alcance
 
