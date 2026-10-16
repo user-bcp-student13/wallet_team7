@@ -11,7 +11,8 @@
 
 ## Contexto actual
 
-- El contrato [ENDPOINTS.md](../../docs/ENDPOINTS.md) define `POST /onboardings` y `PUT /onboardings/current/steps/{stepId}`. No define envío, reenvío ni verificación de código SMS.
+- El contrato anterior `docs/ENDPOINTS.md` fue eliminado. No definía envío, reenvío ni verificación de código SMS.
+- El borrador [ONBOARDING-CONTRACT.md](../../docs/ONBOARDING-CONTRACT.md) define estos flujos en los pasos `phone` y `otp`. Está pendiente de aprobación.
 - El prototipo tiene la pantalla 2 (número de celular y términos) y la pantalla 3 (código de 6 dígitos). El prototipo no define reenvío ni cambio de número.
 - No hay proveedor OTP contratado. Se usará un mock detrás de una interfaz de integración.
 
@@ -40,7 +41,7 @@ Para activar la wallet hay que confirmar que el usuario controla el celular que 
 - Canales alternativos de envío (WhatsApp, llamada de voz).
 - Verificación de DNI (ver [límite de S/ 10 sin DNI](./user-onboarding-low-limit-without-dni.sp.md)).
 - Generación y presentación del PIN (ver [PIN autogenerado](./user-onboarding-generated-pin.sp.md)).
-- Cambios en `docs/ENDPOINTS.md`. Esta spec no modifica el contrato.
+- Cambios en `docs/ONBOARDING-CONTRACT.md`. Esta spec no modifica el contrato.
 
 ## Criterios de aceptación
 
@@ -60,7 +61,7 @@ Para activar la wallet hay que confirmar que el usuario controla el celular que 
 - `PUT /onboardings/current/steps/{stepId}`: paso de celular y paso de código. Los nombres de campo y los `stepId` son propuestas [P] que deben confirmarse antes de codificar.
 - `errors[]` de `422 ValidationProblem`: se usa para código incorrecto, vencido y bloqueado.
 - Envío de código y reenvío: no hay operación definida en el contrato. Debe resolverse la brecha 1 de [endpoints_onboarding.md](../../docs/endpoints_onboarding.md) antes de implementar.
-- `docs/ENDPOINTS.md` queda protegido en esta spec.
+- `docs/ONBOARDING-CONTRACT.md` queda protegido en esta spec.
 
 ## Riesgos, supuestos y preguntas abiertas
 

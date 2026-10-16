@@ -36,7 +36,7 @@ El PIN es requisito para activar la wallet, pero la política elegida cambia qui
 - Elección o edición de PIN por parte del usuario.
 - Cambio de PIN posterior a la activación.
 - Uso del PIN para autorizar pagos (cubierto por las historias de pagos).
-- Cambios en `docs/ENDPOINTS.md`, en el prototipo y en el documento de endpoints. Esta spec solo deja registrado que deben actualizarse.
+- Cambios en `docs/ONBOARDING-CONTRACT.md`, en el prototipo y en el documento de endpoints. Esta spec solo deja registrado que deben actualizarse.
 
 ## Criterios de aceptación
 
@@ -53,7 +53,7 @@ El PIN es requisito para activar la wallet, pero la política elegida cambia qui
 
 ## Contratos afectados o protegidos
 
-- `PUT /onboardings/current/steps/{stepId}`: el paso de activación ya no recibe un PIN del cliente. Hoy el contrato no tiene forma de devolver el PIN generado. Requiere decisión y cambio en `docs/ENDPOINTS.md`, que queda protegido en esta spec.
+- `PUT /onboardings/current/steps/{stepId}`: el paso de activación ya no recibe un PIN del cliente. El contrato anterior no tenía forma de devolver el PIN generado. El borrador `docs/ONBOARDING-CONTRACT.md` propone devolver `generatedPin` en la respuesta del paso `pin`, pendiente de aprobación. Ese contrato queda protegido en esta spec.
 - `Onboarding.walletStatus` (`pending`, `active`): sin cambios en los valores, pero la transición depende de la confirmación del usuario.
 
 ## Riesgos, supuestos y preguntas abiertas
