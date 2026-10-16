@@ -226,7 +226,7 @@ Reglas del PIN [P]:
 - La respuesta de rechazo no refleja el monto ingresado (reglas §4.5).
 - El rechazo se registra como evento sin datos personales (reglas §7.3).
 
-[G] El cumplimiento de S/ 10 sin DNI en Perú no está confirmado por compliance. Si el proveedor real tiene un límite menor, prevalece el menor.
+El cumplimiento de S/ 10 sin DNI en Perú está confirmado por compliance (ver decisión 11). Si el proveedor real tiene un límite menor, prevalece el menor.
 
 El conteo diario de transferencias se reinicia a las 23:59 en zona `America/Lima` [supuesto: zona por confirmar].
 
@@ -253,12 +253,11 @@ El contrato anterior incluía `GET /internal/analytics/onboarding/monthly` (mét
 
 ## Preguntas abiertas antes de codificar
 
-1. Cumplimiento de S/ 10 sin DNI (compliance). Bloqueante: compliance lo confirma antes de codificar.
-2. Bloqueo OTP: unidad de "bloqueo=4" (minutos u otra) (seguridad).
-3. Zona horaria exacta del reinicio a las 23:59 (producto; supuesto `America/Lima`).
-4. Mecanismo de regeneración del PIN y de cambio de número (producto/seguridad).
-5. Política de PIN débiles (`000000`, `123456`) (seguridad).
-6. Enmascarado del número en la pantalla 3 y de dónde sale (producto).
+1. Bloqueo OTP: unidad de "bloqueo=4" (minutos u otra) (seguridad).
+2. Zona horaria exacta del reinicio a las 23:59 (producto; supuesto `America/Lima`).
+3. Mecanismo de regeneración del PIN y de cambio de número (producto/seguridad).
+4. Política de PIN débiles (`000000`, `123456`) (seguridad).
+5. Enmascarado del número en la pantalla 3 y de dónde sale (producto).
 
 ## Decisiones cerradas (MVP)
 
@@ -272,6 +271,7 @@ El contrato anterior incluía `GET /internal/analytics/onboarding/monthly` (mét
 8. **Reenvío de OTP y cambio de número**: incluidos en este sprint.
 9. **Alias de usuario**: número de celular de 9 dígitos.
 10. **Cuenta existente**: si el celular ya tiene cuenta, se muestra mensaje de cuenta existente y se redirige a iniciar sesión (respuesta 401 en el endpoint correspondiente).
+11. **Cumplimiento de S/ 10 sin DNI**: confirmado por compliance, según indicó el usuario. Se mantiene la regla de que, si el proveedor real tiene un límite menor, prevalece el menor.
 
 
 ## Fuera de alcance
